@@ -27,7 +27,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
               Dashboard
             </Link>
           )}
-          {user ? <UserButton afterSignOutUrl="/" /> : <SignInButton mode="modal" className="bg-white text-black px-6 py-2 rounded-full font-bold hover:scale-105 transition" />}
+          {user ? <UserButton /> : <SignInButton mode="modal"><button className="bg-white text-black px-6 py-2 rounded-full font-bold hover:scale-105 transition">Sign In</button></SignInButton>}
         </div>
       </nav>
 
@@ -83,7 +83,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
       {devs.length === 0 && (
         <div className="mt-40 text-center opacity-30">
           <Rocket size={60} className="mx-auto mb-6" />
-          <p className="text-3xl font-black">POOL IS EMPTY</p>
+          <p className="text-3xl font-black text-white">POOL IS EMPTY</p>
         </div>
       )}
     </div>
