@@ -1,2 +1,2 @@
 # CodePool
-Place to find and collab
+Place to find and collab.
