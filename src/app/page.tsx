@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { currentUser } from "@clerk/nextjs/server";
 import { SignInButton, UserButton } from "@clerk/nextjs";
 import { sql } from "@/lib/db";
@@ -19,7 +20,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
           <div className="bg-blue-600 p-2 rounded-xl">
             <Code2 size={28} />
           </div>
-          <span className="text-3xl font-black tracking-tighter">CODEPOOL</span>
+          <span className="text-3xl font-black tracking-tighter text-white">CODEPOOL</span>
         </div>
         <div className="flex items-center gap-6">
           {user && (
@@ -58,7 +59,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
                   <Users size={24} />
                 </div>
                 {dev.rank > 0 && (
-                  <span className="text-[10px] bg-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                  <span className="text-[10px] bg-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-widest text-white">
                     {Math.round(dev.rank * 100)}% Match
                   </span>
                 )}
@@ -79,13 +80,6 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
           </div>
         ))}
       </div>
-      
-      {devs.length === 0 && (
-        <div className="mt-40 text-center opacity-30">
-          <Rocket size={60} className="mx-auto mb-6" />
-          <p className="text-3xl font-black text-white">POOL IS EMPTY</p>
-        </div>
-      )}
     </div>
   );
 }
