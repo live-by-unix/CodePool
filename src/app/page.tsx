@@ -1,130 +1,152 @@
+"use client";
 export const runtime = 'edge';
-import { currentUser } from "@clerk/nextjs/server";
-import { SignInButton, UserButton } from "@clerk/nextjs";
-import { sql } from "@/lib/db";
-import { Search, Code2, Rocket, Globe, Zap, Users, Moon } from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { Search, Code2, Rocket, Globe, Zap, Users, Moon, Sun, Menu, X } from "lucide-react";
 import Link from "next/link";
 
-export default async function HomePage({ searchParams }: { searchParams: { q?: string } }) {
-  const user = await currentUser();
-  const query = (await searchParams)?.q || "";
-
-  const devs = query 
-    ? await sql`SELECT * FROM search_devs(${query})`
-    : await sql`SELECT * FROM dev_profiles ORDER BY created_at DESC LIMIT 20`;
+export default function HomePage() {
+  const { isSignedIn, user } = useUser();
+  const [isDark, setIsDark] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
-      <div className="max-w-6xl mx-auto p-6">
-        <nav className="flex justify-between items-center py-8">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-xl shadow-[0_0_30px_rgba(37,99,235,0.3)]">
-              <Code2 size={28} color="white" />
+    <div className={`${isDark ? "bg-[#050505] text-white" : "bg-[#fcfcfc] text-black"} min-h-screen transition-colors duration-500 selection:bg-blue-500/30`}>
+      
+      {/* --- HEADER --- */}
+      <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? "border-white/5 bg-black/50" : "border-black/5 bg-white/50"} px-6 py-6 md:px-12`}>
+        <div className="max-w-[1800px] mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
+              <Code2 size={32} color="white" />
             </div>
-            <span className="text-3xl font-black tracking-tighter text-white">CODEPOOL</span>
+            <span className="text-3xl md:text-4xl font-black tracking-tighter">CODEPOOL</span>
           </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-zinc-900 border border-zinc-800 p-1 rounded-full pr-3 group cursor-not-allowed opacity-60">
-              <div className="bg-zinc-800 p-1.5 rounded-full text-blue-400">
-                <Moon size={14} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-tight text-zinc-400">Dark Mode</span>
-            </div>
 
-            {user && (
-              <Link href="/onboarding" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-10">
+            <button 
+              onClick={() => setIsDark(!isDark)}
+              className={`p-3 rounded-2xl border transition-all ${isDark ? "bg-zinc-900 border-zinc-800 text-yellow-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-blue-600 hover:bg-zinc-200"}`}
+            >
+              {isDark ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+            
+            {isSignedIn && (
+              <Link href="/onboarding" className={`text-lg font-bold transition ${isDark ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-black"}`}>
                 Dashboard
               </Link>
             )}
             
-            <div className="flex items-center">
-              {user ? (
-                <UserButton appearance={{ elements: { userButtonAvatarBox: "h-10 w-10 border-2 border-zinc-800" } }} />
-              ) : (
-                <SignInButton mode="modal">
-                  <button className="bg-white text-black px-6 py-2.5 rounded-full font-black hover:bg-zinc-200 transition-all active:scale-95">
-                    SIGN IN
-                  </button>
-                </SignInButton>
-              )}
-            </div>
+            {isSignedIn ? (
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "h-12 w-12" } }} />
+            ) : (
+              <SignInButton mode="modal">
+                <button className={`px-8 py-4 rounded-2xl font-black text-lg transition-transform active:scale-95 ${isDark ? "bg-white text-black hover:bg-zinc-200" : "bg-black text-white hover:bg-zinc-800"}`}>
+                  SIGN IN
+                </button>
+              </SignInButton>
+            )}
           </div>
-        </nav>
 
-        <section className="mt-24 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-4 py-1.5 rounded-full text-[11px] font-black text-blue-400 mb-10 uppercase tracking-[0.2em]">
-            <Zap size={14} fill="currentColor" /> Live Node Discovery
+          {/* Mobile Toggle */}
+          <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* --- MOBILE OVERLAY --- */}
+      {isMobileMenuOpen && (
+        <div className={`fixed inset-0 z-40 flex flex-col p-10 gap-8 lg:hidden ${isDark ? "bg-black" : "bg-white"}`}>
+          <button onClick={() => setIsDark(!isDark)} className="flex items-center gap-4 text-2xl font-bold">
+            {isDark ? <Sun className="text-yellow-400" /> : <Moon className="text-blue-600" />} 
+            Theme
+          </button>
+          {isSignedIn && <Link href="/onboarding" className="text-4xl font-black">DASHBOARD</Link>}
+          <div className="mt-auto">
+            {isSignedIn ? <UserButton /> : <SignInButton mode="modal"><button className="text-4xl font-black underline">SIGN IN</button></SignInButton>}
+          </div>
+        </div>
+      )}
+
+      {/* --- HERO SECTION --- */}
+      <main className="px-6 md:px-12 py-20 md:py-40 max-w-[1800px] mx-auto">
+        <div className="flex flex-col items-center text-center">
+          <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full text-sm font-black uppercase tracking-[0.3em] mb-12 border ${isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600"}`}>
+            <Zap size={18} fill="currentColor" /> Global Engineering Network
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-10 bg-gradient-to-b from-white via-white to-zinc-700 bg-clip-text text-transparent leading-[0.85] py-2">
-            FIND YOUR <br /> CO-FOUNDER.
+          <h1 className="text-7xl md:text-[10rem] font-black tracking-tightest leading-[0.8] mb-16">
+            CODE <br className="hidden md:block" />
+            <span className={isDark ? "text-zinc-600" : "text-zinc-300"}>POOL</span>
           </h1>
 
-          <form className="relative group max-w-2xl mx-auto mb-16">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors" size={24} />
+          <div className="w-full max-w-4xl relative group">
+            <Search className={`absolute left-8 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-zinc-600 group-focus-within:text-blue-500" : "text-zinc-400"}`} size={32} />
             <input 
-              name="q"
-              defaultValue={query}
-              placeholder="Search by skill (React, Rust, AI)..."
-              className="w-full bg-zinc-900/50 backdrop-blur-md border-2 border-zinc-800 rounded-3xl py-6 pl-16 pr-8 focus:outline-none focus:border-blue-600 transition-all text-xl text-white placeholder:text-zinc-600 shadow-2xl"
+              placeholder="Search talent, tech, or project name..."
+              className={`w-full py-10 pl-20 pr-10 rounded-[3rem] text-2xl md:text-3xl font-medium focus:outline-none focus:ring-4 transition-all border-2 ${
+                isDark 
+                ? "bg-zinc-900/40 border-zinc-800 text-white focus:ring-blue-500/20 focus:border-blue-500" 
+                : "bg-white border-zinc-200 text-black focus:ring-blue-500/10 focus:border-blue-600 shadow-2xl"
+              }`}
             />
-          </form>
-        </section>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-          {devs.map((dev: any) => (
-            <div key={dev.id} className="group relative bg-zinc-900/20 border border-zinc-800/80 p-8 rounded-[2rem] hover:border-blue-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-              </div>
-
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="bg-zinc-800 h-12 w-12 rounded-2xl flex items-center justify-center text-zinc-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                    <Users size={22} />
-                  </div>
-                  {dev.rank > 0 && (
-                    <span className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded-lg font-black uppercase tracking-widest shadow-lg">
-                      {Math.round(dev.rank * 100)}% Match
-                    </span>
-                  )}
+        {/* --- GRID --- */}
+        <div className="mt-40 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+          {[1, 2, 3].map((i) => (
+            <div 
+              key={i} 
+              className={`p-12 rounded-[4rem] border-2 transition-all duration-500 flex flex-col min-h-[500px] ${
+                isDark 
+                ? "bg-zinc-900/20 border-zinc-800 hover:border-blue-500/50" 
+                : "bg-white border-zinc-100 hover:border-blue-600 shadow-xl"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-12">
+                <div className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-colors ${isDark ? "bg-zinc-800 text-white" : "bg-zinc-100 text-black"}`}>
+                  <Users size={40} />
                 </div>
-                
-                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-blue-400 transition-colors">{dev.name}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed line-clamp-4 font-medium mb-10">
-                  {dev.bio}
-                </p>
+                <div className="bg-blue-600 text-white px-5 py-2 rounded-2xl font-black text-sm tracking-tighter">
+                  MATCH: 98%
+                </div>
               </div>
+              
+              <h3 className="text-4xl font-black mb-6 uppercase">Dev Node _{i}</h3>
+              <p className={`text-xl leading-relaxed mb-auto font-medium ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                Full-stack engineer specialized in distributed systems and high-concurrency Rust backends. 
+                Currently exploring AI-driven infrastructure.
+              </p>
 
-              <div className="flex items-center justify-between pt-6 border-t border-zinc-800/50 relative z-10">
-                <span className="text-[11px] text-zinc-500 font-mono tracking-tighter truncate max-w-[150px] uppercase">
-                  {dev.email.split('@')[0]}
-                </span>
-                {dev.portfolio_url && (
-                  <a 
-                    href={dev.portfolio_url} 
-                    target="_blank" 
-                    className="p-3 bg-white text-black rounded-xl hover:scale-110 active:scale-90 transition-all shadow-[0_5px_15px_rgba(255,255,255,0.1)]"
-                  >
-                    <Globe size={18} />
-                  </a>
-                )}
+              <div className="flex items-center justify-between mt-12">
+                <div className="flex flex-col">
+                  <span className={`text-xs font-black uppercase tracking-widest ${isDark ? "text-zinc-700" : "text-zinc-300"}`}>Status</span>
+                  <span className="font-bold">Available</span>
+                </div>
+                <button className={`p-5 rounded-3xl transition-all ${isDark ? "bg-white text-black hover:bg-blue-500 hover:text-white" : "bg-black text-white hover:bg-blue-600"}`}>
+                  <Globe size={28} />
+                </button>
               </div>
             </div>
           ))}
         </div>
-        
-        {devs.length === 0 && (
-          <div className="mt-32 text-center pb-40">
-            <div className="inline-block p-6 bg-zinc-900/50 rounded-full mb-6 border border-zinc-800">
-              <Rocket size={48} className="text-zinc-700" />
-            </div>
-            <p className="text-2xl font-black text-zinc-600 tracking-tight uppercase">No developers discovered yet</p>
-            <p className="text-zinc-800 font-bold mt-2">Try a different search or clear the filter</p>
+      </main>
+
+      {/* --- FOOTER --- */}
+      <footer className={`mt-40 border-t py-20 px-12 ${isDark ? "border-white/5 bg-zinc-950" : "border-black/5 bg-zinc-50"}`}>
+        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+          <p className="font-black text-xl tracking-tighter">© 2026 CODEPOOL EDGE</p>
+          <div className="flex gap-12 font-bold text-zinc-500">
+            <span className="hover:text-blue-500 cursor-pointer">PRIVACY</span>
+            <span className="hover:text-blue-500 cursor-pointer">TERMS</span>
+            <span className="hover:text-blue-500 cursor-pointer">API</span>
           </div>
-        )}
-      </div>
+        </div>
+      </footer>
     </div>
   );
 }
