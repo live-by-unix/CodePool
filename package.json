@@ -7,10 +7,13 @@
     "build": "next build",
     "start": "next start"
   },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
   "dependencies": {
     "next": "16.2.4",
-    "react": "latest",
-    "react-dom": "latest",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "@clerk/nextjs": "latest",
     "@neondatabase/serverless": "latest",
     "lucide-react": "latest",
