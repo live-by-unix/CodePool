@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { currentUser } from "@clerk/nextjs/server";
 import { sql } from "@/lib/db";
 import { redirect } from "next/navigation";
